@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy Crush Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .info-box {
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .info-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-gap: 2px;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .candy {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            transition: transform 0.2s, opacity 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .candy.selected {
+            transform: scale(0.9);
+            box-shadow: 0 0 0 3px white;
+        }
+        
+        .candy.matched {
+            opacity: 0;
+            transform: scale(0.1);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        button {
+            background: #ff4081;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background: #f50057;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .instructions {
+            max-width: 500px;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .win-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        
+        .win-message.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .win-content {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .win-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .win-content p {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 500px) {
+            .candy {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Candy Crush</h1>
+        <p>Match candies to earn points!</p>
+    </div>
+    
+    <div class="game-info">
+        <div class="info-box">
+            <div class="info-label">SCORE</div>
+            <div class="info-value" id="score">0</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">MOVES</div>
+            <div class="info-value" id="moves">20</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">TARGET</div>
+            <div class="info-value" id="target">500</div>
+        </div>
+    </div>
+    
+    <div class="game-container" id="game-board">
+        <!-- Game board will be generated by JavaScript -->
+    </div>
+    
+    <div class="controls">
+        <button id="reset-btn">New Game</button>
+        <button id="hint-btn">Hint</button>
+    </div>
+    
+    <div class="instructions">
+        <h3>How to Play</h3>
+        <p>Click on two adjacent candies to swap them. Create matches of 3 or more candies of the same type to earn points. 
+        You have limited moves to reach the target score. Match 4 or more candies for special candies!</p>
+    </div>
+    
+    <div class="win-message" id="win-message">
+        <div class="win-content">
+            <h2>Congratulations!</h2>
+            <p>You reached the target score!</p>
+            <button id="play-again-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game configuration
+            const config = {
+                rows: 8,
+                cols: 8,
+                candyTypes: 6,
+                targetScore: 500,
+                initialMoves: 20
+            };
+            
+            // Game state
+            let score = 0;
+            let moves = config.initialMoves;
+            let selectedCandy = null;
+            let board = [];
+            let isSwapping = false;
+            let isCheckingMatches = false;
+            
+            // DOM elements
+            const gameBoard = document.getElementById('game-board');
+            const scoreElement = document.getElementById('score');
+            const movesElement = document.getElementById('moves');
+            const targetElement = document.getElementById('target');
+            const resetBtn = document.getElementById('reset-btn');
+            const hintBtn = document.getElementById('hint-btn');
+            const winMessage = document.getElementById('win-message');
+            const playAgainBtn = document.getElementById('play-again-btn');
+            
+            // Initialize game
+            function initGame() {
+                score = 0;
+                moves = config.initialMoves;
+                selectedCandy = null;
+                board = [];
+                
+                updateUI();
+                createBoard();
+                renderBoard();
+                
+                // Remove win message if visible
+                winMessage.classList.remove('show');
+            }
+            
+            // Create the game board
+            function createBoard() {
+                // Initialize board with random candies
+                for (let row = 0; row < config.rows; row++) {
+                    board[row] = [];
+                    for (let col = 0; col < config.cols; col++) {
+                        board[row][col] = getRandomCandy();
+                    }
+                }
+                
+                // Ensure no initial matches
+                while (checkMatches().length > 0) {
+                    for (let row = 0; row < config.rows; row++) {
+                        for (let col = 0; col < config.cols; col++) {
+                            board[row][col] = getRandomCandy();
+                        }
+                    }
+                }
+            }
+            
+            // Render the game board
+            function renderBoard() {
+                gameBoard.innerHTML = '';
+                gameBoard.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+                
+                for (let row = 0; row < config.rows; row++) {
+                    for (let col = 0; col < config.cols; col++) {
+                        const candy = document.createElement('div');
+                        candy.className = 'candy';
+                        candy.dataset.row = row;
+                        candy.dataset.col = col;
+                        candy.style.backgroundColor = getCandyColor(board[row][col]);
+                        candy.textContent = getCandyEmoji(board[row][col]);
+                        
+                        candy.addEventListener('click', () => handleCandyClick(row, col));
+                        
+                        gameBoard.appendChild(candy);
+                    }
+                }
+            }
+            
+            // Handle candy click
+            function handleCandyClick(row, col) {
+                if (isSwapping || isCheckingMatches || moves <= 0) return;
+                
+                // If no candy is selected, select this one
+                if (selectedCandy === null) {
+                    selectedCandy = { row, col };
+                    highlightCandy(row, col, true);
+                    return;
+                }
+                
+                // If the same candy is clicked again, deselect it
+                if (selectedCandy.row === row && selectedCandy.col === col) {
+                    highlightCandy(row, col, false);
+                    selectedCandy = null;
+                    return;
+                }
+                
+                // Check if the selected candies are adjacent
+                const isAdjacent = 
+                    (Math.abs(selectedCandy.row - row) === 1 && selectedCandy.col === col) ||
+                    (Math.abs(selectedCandy.col - col) === 1 && selectedCandy.row === row);
+                
+                if (isAdjacent) {
+                    // Swap the candies
+                    swapCandies(selectedCandy.row, selectedCandy.col, row, col);
+                    selectedCandy = null;
+                } else {
+                    // Deselect the previous candy and select the new one
+                    highlightCandy(selectedCandy.row, selectedCandy.col, false);
+                    selectedCandy = { row, col };
+                    highlightCandy(row, col, true);
+                }
+            }
+            
+            // Swap two candies
+            function swapCandies(row1, col1, row2, col2) {
+                isSwapping = true;
+                
+                // Swap in the board array
+                [board[row1][col1], board[row2][col2]] = [board[row2][col2], board[row1][col1]];
+                
+                // Update the UI
+                renderBoard();
+                
+                // Check for matches after swap
+                setTimeout(() => {
+                    const matches = checkMatches();
+                    
+                    if (matches.length > 0) {
+                        // Matches found - remove them and update score
+                        removeMatches(matches);
+                        moves--;
+                        updateUI();
+                        
+                        // Check if target is reached
+                        if (score >= config.targetScore) {
+                            setTimeout(() => {
+                                winMessage.classList.add('show');
+                            }, 1000);
+                        }
+                    } else {
+                        // No matches - swap back
+                        [board[row1][col1], board[row2][col2]] = [board[row2][col2], board[row1][col1]];
+                        renderBoard();
+                    }
+                    
+                    isSwapping = false;
+                }, 300);
+            }
+            
+            // Check for matches on the board
+            function checkMatches() {
+                const matches = [];
+                
+                // Check horizontal matches
+                for (let row = 0; row < config.rows; row++) {
+                    for (let col = 0; col < config.cols - 2; col++) {
+                        const candyType = board[row][col];
+                        if (candyType !== -1 && 
+                            candyType === board[row][col + 1] && 
+                            candyType === board[row][col + 2]) {
+                            
+                            // Check for longer matches
+                            let matchLength = 3;
+                            while (col + matchLength < config.cols && board[row][col + matchLength] === candyType) {
+                                matchLength++;
+                            }
+                            
+                            // Add all candies in the match
+                            for (let i = 0; i < matchLength; i++) {
+                                matches.push({ row, col: col + i });
+                            }
+                            
+                            col += matchLength - 1;
+                        }
+                    }
+                }
+                
+                // Check vertical matches
+                for (let col = 0; col < config.cols; col++) {
+                    for (let row = 0; row < config.rows - 2; row++) {
+                        const candyType = board[row][col];
+                        if (candyType !== -1 && 
+                            candyType === board[row + 1][col] && 
+                            candyType === board[row + 2][col]) {
+                            
+                            // Check for longer matches
+                            let matchLength = 3;
+                            while (row + matchLength < config.rows && board[row + matchLength][col] === candyType) {
+                                matchLength++;
+                            }
+                            
+                            // Add all candies in the match
+                            for (let i = 0; i < matchLength; i++) {
+                                matches.push({ row: row + i, col });
+                            }
+                            
+                            row += matchLength - 1;
+                        }
+                    }
+                }
+                
+                return matches;
+            }
+            
+            // Remove matched candies and update score
+            function removeMatches(matches) {
+                // Remove duplicates (candies that are in both horizontal and vertical matches)
+                const uniqueMatches = [];
+                const matchSet = new Set();
+                
+                for (const match of matches) {
+                    const key = `${match.row},${match.col}`;
+                    if (!matchSet.has(key)) {
+                        matchSet.add(key);
+                        uniqueMatches.push(match);
+                    }
+                }
+                
+                // Calculate score
+                const points = uniqueMatches.length * 10;
+                score += points;
+                
+                // Remove candies from board
+                for (const match of uniqueMatches) {
+                    board[match.row][match.col] = -1;
+                }
+                
+                // Update UI to show matched candies disappearing
+                renderBoard();
+                
+                // Drop candies from above
+                setTimeout(() => {
+                    dropCandies();
+                }, 500);
+            }
+            
+            // Drop candies to fill empty spaces
+            function dropCandies() {
+                for (let col = 0; col < config.cols; col++) {
+                    let emptySpaces = 0;
+                    
+                    // Count empty spaces from bottom to top
+                    for (let row = config.rows - 1; row >= 0; row--) {
+                        if (board[row][col] === -1) {
+                            emptySpaces++;
+                        } else if (emptySpaces > 0) {
+                            // Move candy down
+                            board[row + emptySpaces][col] = board[row][col];
+                            board[row][col] = -1;
+                        }
+                    }
+                    
+                    // Fill top empty spaces with new candies
+                    for (let row = 0; row < emptySpaces; row++) {
+                        board[row][col] = getRandomCandy();
+                    }
+                }
+                
+                renderBoard();
+                
+                // Check for new matches after dropping
+                setTimeout(() => {
+                    const newMatches = checkMatches();
+                    if (newMatches.length > 0) {
+                        removeMatches(newMatches);
+                    }
+                }, 500);
+            }
+            
+            // Highlight a candy
+            function highlightCandy(row, col, isSelected) {
+                const candyElement = document.querySelector(`.candy[data-row="${row}"][data-col="${col}"]`);
+                if (candyElement) {
+                    if (isSelected) {
+                        candyElement.classList.add('selected');
+                    } else {
+                        candyElement.classList.remove('selected');
+                    }
+                }
+            }
+            
+            // Update UI elements
+            function updateUI() {
+                scoreElement.textContent = score;
+                movesElement.textContent = moves;
+                targetElement.textContent = config.targetScore;
+            }
+            
+            // Get a random candy type
+            function getRandomCandy() {
+                return Math.floor(Math.random() * config.candyTypes);
+            }
+            
+            // Get candy color based on type
+            function getCandyColor(type) {
+                const colors = [
+                    '#FF5252', // Red
+                    '#FF4081', // Pink
+                    '#E040FB', // Purple
+                    '#7C4DFF', // Deep Purple
+                    '#536DFE', // Indigo
+                    '#448AFF', // Blue
+                    '#40C4FF', // Light Blue
+                    '#18FFFF', // Cyan
+                    '#64FFDA', // Teal
+                    '#69F0AE', // Green
+                    '#B2FF59', // Light Green
+                    '#EEFF41', // Lime
+                    '#FFFF00', // Yellow
+                    '#FFD740', // Amber
+                    '#FFAB40', // Orange
+                    '#FF6E40'  // Deep Orange
+                ];
+                return colors[type % colors.length];
+            }
+            
+            // Get candy emoji based on type
+            function getCandyEmoji(type) {
+                const emojis = ['🍬', '🍭', '🍫', '🍩', '🍪', '🧁', '🍎', '🍇', '🍉', '🍓', '🍒', '🍑', '🍍', '🥭', '🍊', '🍋'];
+                return emojis[type % emojis.length];
+            }
+            
+            // Event listeners
+            resetBtn.addEventListener('click', initGame);
+            playAgainBtn.addEventListener('click', initGame);
+            
+            hintBtn.addEventListener('click', () => {
+                if (moves <= 0) return;
+                
+                // Find a potential match
+                for (let row = 0; row < config.rows; row++) {
+                    for (let col = 0; col < config.cols - 1; col++) {
+                        // Try swapping with right neighbor
+                        [board[row][col], board[row][col + 1]] = [board[row][col + 1], board[row][col]];
+                        if (checkMatches().length > 0) {
+                            // Highlight the potential move
+                            highlightCandy(row, col, true);
+                            highlightCandy(row, col + 1, true);
+                            
+                            // Swap back
+                            [board[row][col], board[row][col + 1]] = [board[row][col + 1], board[row][col]];
+                            
+                            // Remove highlights after a delay
+                            setTimeout(() => {
+                                highlightCandy(row, col, false);
+                                highlightCandy(row, col + 1, false);
+                            }, 1000);
+                            
+                            return;
+                        }
+                        [board[row][col], board[row][col + 1]] = [board[row][col + 1], board[row][col]];
+                    }
+                }
+                
+                // If no hints found, show message
+                alert('No obvious moves found. Try looking for potential matches!');
+            });
+            
+            // Start the game
+            initGame();
+        });
+    </script>
+</body>
+</html>
